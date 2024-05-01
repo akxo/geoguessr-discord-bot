@@ -4,6 +4,8 @@ const client = new Client({intents: [GatewayIntentBits.Guilds, GatewayIntentBits
 
 const apiKey = 'AIzaSyCQXuQ9SMHXdwYyoih_UDAqG-nEOjUtkMw'
 
+var kill = false
+
 var countryCode;
 var isPlaying = false
 var channelID
@@ -82,6 +84,14 @@ client.on('messageCreate', async (message) => {
             message.react('❌');
         }
     }
+
+    if(str==='$kill') {
+        kill = true
+    }
+
+    if(str==='$revive') {
+        kill = false
+    }
 })
 
 client.login(process.env.TOKEN);
@@ -92,7 +102,7 @@ async function sendImage() {
 
     var count = 0;
 
-    while(true) {
+    while(!kill) {
         count += 1;
 
         console.log(`try ${count}`);
@@ -190,7 +200,6 @@ const countries = {
     "eg": "egypt",
     "es": "spain",
     "fi": "finland",
-    "fk": "falkland islands (malvinas)",
     "fo": "faroe islands",
     "fr": "france",
     "gb": "england",
