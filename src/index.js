@@ -10,7 +10,6 @@ var channelID
 
 client.on('ready', (x) => {
     console.log(`${x.user.tag} is ready!`);
-    client.user.setActivity('this is a test');
 
     const start = new SlashCommandBuilder()
     .setName('start')
@@ -35,13 +34,23 @@ client.on('interactionCreate', (interaction) => {
         if(!channelID) {
             channelID = interaction.channelId
         }
-        interaction.reply('starting practice...');
-        sendImage()
+        console.log('slash command: start');
+
+        if(isPlaying) {
+            interaction.reply('practice already started');
+        } else {
+            interaction.reply('starting practice...');
+            sendImage()
+        }
     }
     if(interaction.commandName==='list') {
+        console.log('slash command: list');
+
         interaction.reply(Object.keys(countries).map(key => `${countries[key]} - ${key}`).sort().join('\n'));
     }
     if(interaction.commandName==='give-up') {
+        console.log('slash command: give-up');
+
         if(countryCode) {
             interaction.reply(`${countries[countryCode]} - ${countryCode}`);
             isPlaying = false
@@ -56,14 +65,20 @@ client.on('messageCreate', async (message) => {
     if(message.author.bot) return;
     if(!isPlaying) return;
 
+    console.log(`message received: ${message}`);
+
     const str = message.content.toLowerCase();
   
     if(str.length===2) {
         if(str===countryCode) {
+            console.log(`${message} ✅`);
+
             message.react('✅');
             isPlaying = false
             sendImage()
         } else {
+            console.log(`${message} ❌`);
+
             message.react('❌');
         }
     }
@@ -75,13 +90,23 @@ async function sendImage() {
     const countryCodes = Object.keys(countries).sort();
     countryCode = countryCodes[Math.floor(Math.random()*countryCodes.length)];
 
+    var count = 0;
+
     while(true) {
+        count += 1;
+
+        console.log(`try ${count}`);
+
         const location = await getLocation(countryCode);
         const hasStreetView = await getStreetViewStatus(location);
 
         if (hasStreetView) {
+            const url = `https://maps.googleapis.com/maps/api/streetview?size=800x400&location=${location.latt},${location.long}&heading=0&fov=120&radius=1000&key=${apiKey}`;
             const image = new EmbedBuilder()
-                .setImage(`https://maps.googleapis.com/maps/api/streetview?size=800x400&location=${location.latt},${location.long}&heading=0&fov=120&radius=1000&key=${apiKey}`);
+            .setImage(url);
+
+            console.log('sending image...');
+            console.log(url);
 
             client.channels.cache.get(channelID).send({ embeds: [image] });
 
@@ -92,7 +117,15 @@ async function sendImage() {
 }
 
 async function getLocation(countryCode) {
-    const response = await fetch(`https://api.3geonames.org/?randomland=${countryCode}`);
+    const url = `https://api.3geonames.org/?randomland=${countryCode}`
+
+    console.log('getting location...');
+    console.log(url);
+
+    const response = await fetch(url);
+
+    if(!response) return;
+
     const xmlText = await response.text();
 
     const lattComponent = xmlText.split('<latt>')[1];
@@ -110,9 +143,14 @@ async function getLocation(countryCode) {
 async function getStreetViewStatus(location) {
     const url = `https://maps.googleapis.com/maps/api/streetview/metadata?size=800x400&location=${location.latt},${location.long}&heading=0&fov=120&radius=1000&key=${apiKey}`;
     
+    console.log('getting street view status...');
+    console.log(url);
+
     const response = await fetch(url);
     const json = await response.json();
     
+    console.log(`status: ${json.status}`);
+
     if(json.status==='ZERO_RESULTS') return false;
     return true;
 }
