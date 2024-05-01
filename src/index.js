@@ -2,6 +2,8 @@ require('dotenv').config()
 const {Client, GatewayIntentBits, EmbedBuilder, PermissionsBitField, Permissions, SlashCommandBuilder} = require('discord.js');
 const client = new Client({intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages, GatewayIntentBits.MessageContent]});
 
+const apiKey = 'AIzaSyCQXuQ9SMHXdwYyoih_UDAqG-nEOjUtkMw'
+
 var countryCode;
 var isPlaying = false
 var channelID
@@ -30,18 +32,20 @@ client.on('ready', (x) => {
 client.on('interactionCreate', (interaction) => {
     if(!interaction.isChatInputCommand()) return;
     if(interaction.commandName==='start') {
-        // TODO: - call send image func
+        if(!channelID) {
+            channelID = interaction.channelId
+        }
         interaction.reply('starting practice...');
-
-        countryCode = 'ca'
-        isPlaying = true
+        sendImage()
     }
     if(interaction.commandName==='list') {
         interaction.reply(Object.keys(countries).map(key => `${countries[key]} - ${key}`).sort().join('\n'));
     }
     if(interaction.commandName==='give-up') {
         if(countryCode) {
-            interaction.reply(`womp womp\n${countries[countryCode]} - ${countryCode}`);
+            interaction.reply(`${countries[countryCode]} - ${countryCode}`);
+            isPlaying = false
+            sendImage()
         } else {
             interaction.reply(`practice not in session`);
         }
@@ -58,6 +62,7 @@ client.on('messageCreate', async (message) => {
         if(str===countryCode) {
             message.react('✅');
             isPlaying = false
+            sendImage()
         } else {
             message.react('❌');
         }
@@ -65,6 +70,52 @@ client.on('messageCreate', async (message) => {
 })
 
 client.login(process.env.TOKEN);
+
+async function sendImage() {
+    const countryCodes = Object.keys(countries).sort();
+    countryCode = countryCodes[Math.floor(Math.random()*countryCodes.length)];
+
+    while(true) {
+        const location = await getLocation(countryCode);
+        const hasStreetView = await getStreetViewStatus(location);
+
+        if (hasStreetView) {
+            const image = new EmbedBuilder()
+                .setImage(`https://maps.googleapis.com/maps/api/streetview?size=800x400&location=${location.latt},${location.long}&heading=0&fov=120&radius=1000&key=${apiKey}`);
+
+            client.channels.cache.get(channelID).send({ embeds: [image] });
+
+            isPlaying = true
+            break;
+        }
+    }
+}
+
+async function getLocation(countryCode) {
+    const response = await fetch(`https://api.3geonames.org/?randomland=${countryCode}`);
+    const xmlText = await response.text();
+
+    const lattComponent = xmlText.split('<latt>')[1];
+    const latt = lattComponent.split('</latt>')[0];
+
+    const longComponent = lattComponent.split('<longt>')[1];
+    const long = longComponent.split('</longt>')[0];
+
+    return {
+        'latt': latt,
+        'long': long
+    };
+}
+
+async function getStreetViewStatus(location) {
+    const url = `https://maps.googleapis.com/maps/api/streetview/metadata?size=800x400&location=${location.latt},${location.long}&heading=0&fov=120&radius=1000&key=${apiKey}`;
+    
+    const response = await fetch(url);
+    const json = await response.json();
+    
+    if(json.status==='ZERO_RESULTS') return false;
+    return true;
+}
 
 const countries = {
     "ad": "andorra",
