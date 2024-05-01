@@ -4,8 +4,6 @@ const client = new Client({intents: [GatewayIntentBits.Guilds, GatewayIntentBits
 
 const apiKey = 'AIzaSyCQXuQ9SMHXdwYyoih_UDAqG-nEOjUtkMw'
 
-var kill = false
-
 var countryCode;
 var isPlaying = false
 var channelID
@@ -84,14 +82,6 @@ client.on('messageCreate', async (message) => {
             message.react('❌');
         }
     }
-
-    if(str==='$kill') {
-        kill = true
-    }
-
-    if(str==='$revive') {
-        kill = false
-    }
 })
 
 client.login(process.env.TOKEN);
@@ -102,7 +92,7 @@ async function sendImage() {
 
     var count = 0;
 
-    while(!kill) {
+    while(true) {
         count += 1;
 
         console.log(`try ${count}`);
