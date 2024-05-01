@@ -2,6 +2,10 @@ require('dotenv').config()
 const {Client, GatewayIntentBits, EmbedBuilder, PermissionsBitField, Permissions, SlashCommandBuilder} = require('discord.js');
 const client = new Client({intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages, GatewayIntentBits.MessageContent]});
 
+var countryCode;
+var isPlaying = false
+var channelID
+
 client.on('ready', (x) => {
     console.log(`${x.user.tag} is ready!`);
     client.user.setActivity('this is a test');
@@ -14,8 +18,13 @@ client.on('ready', (x) => {
     .setName('list')
     .setDescription('list all countries with coverage');
 
+    const giveUp = new SlashCommandBuilder()
+    .setName('give-up')
+    .setDescription('reveal the answer');
+
     client.application.commands.create(start);
     client.application.commands.create(list);
+    client.application.commands.create(giveUp);
 })
 
 client.on('interactionCreate', (interaction) => {
@@ -23,9 +32,35 @@ client.on('interactionCreate', (interaction) => {
     if(interaction.commandName==='start') {
         // TODO: - call send image func
         interaction.reply('starting practice...');
+
+        countryCode = 'ca'
+        isPlaying = true
     }
     if(interaction.commandName==='list') {
         interaction.reply(Object.keys(countries).map(key => `${countries[key]} - ${key}`).sort().join('\n'));
+    }
+    if(interaction.commandName==='give-up') {
+        if(countryCode) {
+            interaction.reply(`womp womp\n${countries[countryCode]} - ${countryCode}`);
+        } else {
+            interaction.reply(`practice not in session`);
+        }
+    }
+})
+
+client.on('messageCreate', async (message) => {
+    if(message.author.bot) return;
+    if(!isPlaying) return;
+
+    const str = message.content.toLowerCase();
+  
+    if(str.length===2) {
+        if(str===countryCode) {
+            message.react('✅');
+            isPlaying = false
+        } else {
+            message.react('❌');
+        }
     }
 })
 
