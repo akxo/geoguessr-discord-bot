@@ -90,6 +90,12 @@ async function sendImage() {
     const countryCodes = Object.keys(countries).sort();
     countryCode = countryCodes[Math.floor(Math.random()*countryCodes.length)];
 
+    var radius = 1000; // 1km
+
+    if(limitedCountries.includes(countryCode)) {
+        radius = 100000; // 100km
+    }
+
     var count = 0;
 
     while(true) {
@@ -102,10 +108,13 @@ async function sendImage() {
         console.log(`try ${count}`);
 
         const location = await getLocation(countryCode);
-        const hasStreetView = await getStreetViewStatus(location);
+
+        const request = `size=800x400&location=${location.latt},${location.long}&heading=0&fov=120&radius=${radius}&key=${apiKey}`;
+
+        const hasStreetView = await getStreetViewStatus(request);
 
         if (hasStreetView) {
-            const url = `https://maps.googleapis.com/maps/api/streetview?size=800x400&location=${location.latt},${location.long}&heading=0&fov=120&radius=1000&key=${apiKey}`;
+            const url = `https://maps.googleapis.com/maps/api/streetview?${request}`;
             const image = new EmbedBuilder()
             .setImage(url);
 
@@ -144,8 +153,8 @@ async function getLocation(countryCode) {
     };
 }
 
-async function getStreetViewStatus(location) {
-    const url = `https://maps.googleapis.com/maps/api/streetview/metadata?size=800x400&location=${location.latt},${location.long}&heading=0&fov=120&radius=1000&key=${apiKey}`;
+async function getStreetViewStatus(request) {
+    const url = `https://maps.googleapis.com/maps/api/streetview/metadata?${request}`;
     
     console.log('getting street view status...');
     console.log(url);
@@ -158,6 +167,11 @@ async function getStreetViewStatus(location) {
     if(json.status==='ZERO_RESULTS') return false;
     return true;
 }
+
+const limitedCountries = [
+    "ug",
+    "ng"
+]
 
 const countries = {
     "ad": "andorra",
