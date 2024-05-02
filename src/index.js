@@ -95,7 +95,7 @@ async function sendImage() {
     while(true) {
         count += 1;
 
-        if(count===6) {
+        if(count===11) {
             break;
         }
 
