@@ -95,6 +95,10 @@ async function sendImage() {
     while(true) {
         count += 1;
 
+        if(count===6) {
+            break;
+        }
+
         console.log(`try ${count}`);
 
         const location = await getLocation(countryCode);
