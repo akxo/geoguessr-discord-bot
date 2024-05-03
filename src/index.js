@@ -171,7 +171,9 @@ async function getStreetViewStatus(request) {
 const limitedCountries = [
     "ug",
     "ng",
-    "sj"
+    "sj",
+    "tn",
+    "eg"
 ]
 
 const countries = {
