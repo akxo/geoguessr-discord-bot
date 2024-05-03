@@ -92,6 +92,10 @@ async function sendImage() {
 
     var radius = 1000; // 1km
 
+    if(somewhatLimitedCountries.includes(countryCode)) {
+        radius = 10000; // 10km
+    }
+
     if(limitedCountries.includes(countryCode)) {
         radius = 100000; // 100km
     }
@@ -174,6 +178,10 @@ const limitedCountries = [
     "sj",
     "tn",
     "eg"
+]
+
+const somewhatLimitedCountries = [
+    "ls"
 ]
 
 const countries = {
