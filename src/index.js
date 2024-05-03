@@ -101,7 +101,7 @@ async function sendImage() {
     while(true) {
         count += 1;
 
-        if(count===11) {
+        if(count===6) {
             break;
         }
 
@@ -170,7 +170,8 @@ async function getStreetViewStatus(request) {
 
 const limitedCountries = [
     "ug",
-    "ng"
+    "ng",
+    "sj"
 ]
 
 const countries = {
