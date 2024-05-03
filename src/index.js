@@ -5,8 +5,8 @@ const client = new Client({intents: [GatewayIntentBits.Guilds, GatewayIntentBits
 const apiKey = 'AIzaSyCQXuQ9SMHXdwYyoih_UDAqG-nEOjUtkMw'
 
 var countryCode;
-var isPlaying = false
-var channelID
+var isPlaying = false;
+var channelID;
 
 client.on('ready', (x) => {
     console.log(`${x.user.tag} is ready!`);
@@ -68,18 +68,42 @@ client.on('messageCreate', async (message) => {
     console.log(`message received: ${message}`);
 
     const str = message.content.toLowerCase();
-  
+
     if(str.length===2) {
-        if(str===countryCode) {
-            console.log(`${message} ✅`);
-
-            message.react('✅');
-            isPlaying = false
-            sendImage()
+        if(str in countries) {
+            if(str===countryCode) {
+                console.log(`${message} ✅`);
+    
+                message.react('✅');
+                isPlaying = false
+                sendImage()
+            } else {
+                console.log(`${message} ❌`);
+    
+                message.react('❌');
+            }
         } else {
-            console.log(`${message} ❌`);
+            console.log(`${message} 🤡`);
 
-            message.react('❌');
+            message.react('🤡');
+        }
+    } else {
+        if(Object.values(countries).includes(str)) {
+            if(str===countries[countryCode]) {
+                console.log(`${message} ✅`);
+    
+                message.react('✅');
+                isPlaying = false
+                sendImage()
+            } else {
+                console.log(`${message} ❌`);
+    
+                message.react('❌');
+            }
+        } else {
+            console.log(`${message} 🤡`);
+
+            message.react('🤡');
         }
     }
 })
