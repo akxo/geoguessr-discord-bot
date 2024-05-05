@@ -203,7 +203,8 @@ const limitedCountries = [
     "tn",
     "eg",
     "mn",
-    "kz"
+    "kz",
+    "gl"
 ]
 
 const somewhatLimitedCountries = [
